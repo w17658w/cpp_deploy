@@ -1,0 +1,54 @@
+# =====================================================================
+# cpp_deploy 配置文件
+# 格式: key: value   （# 开头为注释；逗号分隔的整数列表用 getIntList 读取）
+# 本机 Windows 调试: imu_port 填 "COM9", arduino_port 填对应 COM 口（GPIO 编译为 stub）
+# Zero 3W (Linux):   imu_port="/dev/ttyUSB0", arduino_port="/dev/ttyACM0"
+# =====================================================================
+
+# ---- 串口 ----
+imu_port: "/dev/ttyUSB0"          # WT901 IMU (CH340)。Windows 改 "COM9"
+imu_baud: 115200                  # 须与 WT901 实际烧录波特率一致（手册默认 9600）
+arduino_port: "/dev/ttyACM0"      # Arduino Mega2560 (CDC)。Windows 改对应 COM 口
+arduino_baud: 115200
+
+# ---- 控制节拍 ----
+control_hz: 1.0                   # 推理/发动作频率（训练时 ACTION_REPEAT=8 x 0.125s = 1Hz）
+imu_read_hz: 50                   # IMU 读取线程目标刷新频率
+
+# ---- 权重 ----
+weights_path: "actor.bin"         # export_weights.py 导出的 .bin（34 维网络）
+
+# ---- 网络维度（与训练一致，一般不改）----
+obs_dim: 34
+hidden_size: 256
+action_dim: 12
+
+# ---- 状态归一化参数（与 env_genesis_vec.py 对齐，勿改）----
+leg_length_mid: 0.05              # 命令腿长归一化中心 (m)：norm = 2*(cmd-mid)/span
+leg_length_span: 0.1              # 命令腿长归一化跨度 (m)
+action_low: 0.01                  # 动作下限 (m)
+action_high: 0.09                 # 动作上限 (m)
+
+# ---- 卡死量（真机只留姿态项，位置项已随状态改版移除）----
+motion_ori_ref: 0.05              # 姿态项参考 (rad)
+
+# ---- WT901 量程 / 零偏 / 轴对齐 ----
+accel_range_g: 16                 # 加速度量程（手册确认 ±16g）
+gyro_range_dps: 4000              # 陀螺仪量程（WT9011G4K=4000；标准 WT901=2000，按实配改）
+angle_range_deg: 180              # 角度量程（X/Z ±180°，Y ±90°，编码刻度统一 180）
+zero_bias_samples: 100            # 开机零偏采样帧数（约 2 秒 @50Hz）
+enable_axis_calib: true           # 安装角补偿：true=标定时自动抓当前原始欧拉角做 R_mount（任意倾斜安装都适用，如绕 X 轴 ~18°）
+
+# ---- 触地 GPIO（香橙派直读，12 路压力传感器 DO）----
+# 电平警告：香橙派 GPIO 是 3.3V。若传感器模块 5V 供电且 DO 输出 5V，必须加电平转换，否则可能烧板。
+contact_gpio_chip: "/dev/gpiochip0"     # gpiochip 设备（用 gpioinfo 查）
+contact_gpio_lines: 0,1,2,3,4,5,6,7,8,9,10,11   # 12 根 GPIO line 号（按实际接线填）
+contact_active_high: true               # 有效电平（true=高电平表示触地，按模块实际改）
+
+# ---- 舵机（L16-100-35-6-R）----
+actuator_stroke_m: 0.1            # 行程 100mm
+pulse_min_us: 1000                # 1.0ms = 全缩回
+pulse_max_us: 2000                # 2.0ms = 全伸出
+
+# ---- 初始动作（开机默认每条腿，对应 env last_cmd=[0.03]*12）----
+init_leg_length_m: 0.03
