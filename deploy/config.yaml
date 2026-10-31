@@ -6,8 +6,8 @@
 # =====================================================================
 
 # ---- 串口 ----
-imu_port: "/dev/ttyUSB0"          # WT901 IMU (CH340)。Windows 改 "COM9"
-imu_baud: 115200                  # 须与 WT901 实际烧录波特率一致（手册默认 9600）
+imu_port: "/dev/ttyUSB0"          # WT901 IMU 
+imu_baud: 115200                  # 须与 WT901 实际烧录波特率一致
 arduino_port: "/dev/ttyACM0"      # Arduino Mega2560 (CDC)。Windows 改对应 COM 口
 arduino_baud: 115200
 
@@ -16,7 +16,7 @@ control_hz: 1.0                   # 推理/发动作频率（训练时 ACTION_RE
 imu_read_hz: 50                   # IMU 读取线程目标刷新频率
 
 # ---- 权重 ----
-weights_path: "actor.bin"         # export_weights.py 导出的 .bin（34 维网络）
+weights_path: "../models/actor.bin"  # 34 维网络（tools/export_weights.py 导出，放在仓库根 models/ 下）
 
 # ---- 网络维度（与训练一致，一般不改）----
 obs_dim: 34

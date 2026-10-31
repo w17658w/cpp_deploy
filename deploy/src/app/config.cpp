@@ -23,7 +23,12 @@ void Config::load(const std::string& path) {
     while (std::getline(in, line)) {
         ++lineno;
         std::string t = trim(line);
-        if (t.empty() || t[0] == '#') continue;      // 空行 / 注释
+        if (t.empty() || t[0] == '#') continue;      // 空行 / 整行注释
+
+        // 剥离行内注释（# 及之后的内容）；本配置的值不含 #，可安全按第一个 # 截断
+        size_t hash = t.find('#');
+        if (hash != std::string::npos)
+            t = trim(t.substr(0, hash));
 
         size_t colon = t.find(':');
         if (colon == std::string::npos)

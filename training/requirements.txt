@@ -1,0 +1,19 @@
+# robot12/training 训练依赖（pip 安装部分）
+# 注意：genesis 物理引擎从源码 editable 安装，torch 按 CUDA 版本单独装（见 README.md），不在此文件里。
+
+# 核心数值/物理依赖
+numpy==2.2.6          # 必须 pip 版（OpenBLAS），不能用 conda 的 MKL 版，否则 genesis 崩 0xc06d007f
+scipy==1.15.3
+
+# 环境接口（env_genesis_vec.py 用旧版 gym 的 spaces）
+gym==0.25.2
+
+# genesis 的 URDF 解析依赖
+xacro==2.1.1
+trimesh==5.0.0
+quadrants==1.3.3
+
+# 训练诊断（每 100 轮写 PNG/XLS）
+opencv-python          # cv2，诊断图
+xlwt                   # 写诊断 XLS
+xlrd                   # resume 时读历史 XLS

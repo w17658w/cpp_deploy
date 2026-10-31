@@ -1,0 +1,1442 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="robot_6">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.003 -0.048 0.0024"
+        rpy="0 0 0" />
+      <mass
+        value="0.27" />
+      <inertia
+        ixx="0.000334986628675118"
+        ixy="8.70328408205724E-13"
+        ixz="1.2749453084254E-12"
+        iyy="0.000335544960652449"
+        iyz="-6.16929369325362E-13"
+        izz="0.000336941178143134" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="Empty_Link1">
+    <inertial>
+      <origin
+        xyz="0.0130415877292067 0.00237922670532182 -0.0537561787790916"
+        rpy="0 0 0" />
+      <mass
+        value="0.0308167457539221" />
+      <inertia
+        ixx="2.04021908983958E-05"
+        ixy="-1.31741551286746E-08"
+        ixz="-6.59178153592294E-09"
+        iyy="2.07358438863334E-05"
+        iyz="-2.46638000948722E-08"
+        izz="7.44573653492191E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint1"
+    type="prismatic">
+    <origin
+      xyz="0.020159 -0.08858 0.05772"
+      rpy="2.6779 0.0091281 3.137" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link1" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+<dynamics
+    damping="0.1"
+    friction="0.05" />
+  </joint>
+  <link
+    name="Empty_Link13">
+    <inertial>
+      <origin
+        xyz="0.116357387164544 -0.00108737797343595 -0.00196353515996296"
+        rpy="0 0 0" />
+      <mass
+        value="0.0374741367512844" />
+      <inertia
+        ixx="6.17472067559835E-06"
+        ixy="7.58195052443463E-08"
+        ixz="8.26843225380941E-08"
+        iyy="1.59161620062706E-05"
+        iyz="1.26830259038368E-08"
+        izz="1.5690062430675E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link13.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link13.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint13"
+    type="prismatic">
+    <origin
+      xyz="0.0093175 0.0020569 0.030456"
+      rpy="-1.5708 1.5706 0" />
+    <parent
+      link="Empty_Link1" />
+    <child
+      link="Empty_Link13" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link2">
+    <inertial>
+      <origin
+        xyz="0.0130415865582899 0.00237922722498335 -0.0537561727292205"
+        rpy="0 0 0" />
+      <mass
+        value="0.0308167439982111" />
+      <inertia
+        ixx="2.04021907674012E-05"
+        ixy="-1.31741459276569E-08"
+        ixz="-6.59158071813632E-09"
+        iyy="2.07358437937647E-05"
+        iyz="-2.46638316136813E-08"
+        izz="7.44573698811823E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint2"
+    type="prismatic">
+    <origin
+      xyz="0.019694 -0.135 0.0011791"
+      rpy="1.5708 0 3.131" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link2" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link14">
+    <inertial>
+      <origin
+        xyz="0.116356552807432 -0.00108614076425723 -0.00196351114964616"
+        rpy="0 0 0" />
+      <mass
+        value="0.0304733216924166" />
+      <inertia
+        ixx="6.1734751344071E-06"
+        ixy="7.58903532178676E-08"
+        ixz="8.26998974641755E-08"
+        iyy="1.59161066012652E-05"
+        iyz="1.26841946202658E-08"
+        izz="1.56897856589697E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link14.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link14.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint14"
+    type="prismatic">
+    <origin
+      xyz="0.0090147 0.0033284 0.029294"
+      rpy="-1.5708 1.5655 0" />
+    <parent
+      link="Empty_Link2" />
+    <child
+      link="Empty_Link14" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link3">
+    <inertial>
+      <origin
+        xyz="0.0130415862961988 0.00237922693795153 -0.0537561699446113"
+        rpy="0 0 0" />
+      <mass
+        value="0.030816743254112" />
+      <inertia
+        ixx="2.04021908309647E-05"
+        ixy="-1.31741467385492E-08"
+        ixz="-6.59159477569209E-09"
+        iyy="2.07358438097523E-05"
+        iyz="-2.46637890378803E-08"
+        izz="7.44573675481919E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint3"
+    type="prismatic">
+    <origin
+      xyz="-0.049106 -0.09063 0.022223"
+      rpy="2.6646 1.265 3.1276" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link3" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link15">
+    <inertial>
+      <origin
+        xyz="0.116356390622061 -0.00108616202175277 -0.00196350852102846"
+        rpy="0 0 0" />
+      <mass
+        value="0.0304732821833798" />
+      <inertia
+        ixx="6.17473273788383E-06"
+        ixy="7.57966596699159E-08"
+        ixz="8.26930861033418E-08"
+        iyy="1.59161700663621E-05"
+        iyz="1.26865377962951E-08"
+        izz="1.56900740773319E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link15.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link15.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint15"
+    type="prismatic">
+    <origin
+      xyz="0.0086506 0.0032028 0.030894"
+      rpy="-1.5708 1.5696 0" />
+    <parent
+      link="Empty_Link3" />
+    <child
+      link="Empty_Link15" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link4">
+    <inertial>
+      <origin
+        xyz="0.0130415867818329 0.0023792271097933 -0.0537561684557925"
+        rpy="0 0 0" />
+      <mass
+        value="0.0308167428915133" />
+      <inertia
+        ixx="2.04021908204091E-05"
+        ixy="-1.31741500747651E-08"
+        ixz="-6.59160165288159E-09"
+        iyy="2.07358438032886E-05"
+        iyz="-2.46637861403921E-08"
+        izz="7.44573686809234E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link4.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link4.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint4"
+    type="prismatic">
+    <origin
+      xyz="-0.038797 -0.042834 0.038953"
+      rpy="2.6829 -0.61451 -0.0084403" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link4" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link16">
+    <inertial>
+      <origin
+        xyz="0.116356513545438 -0.00108612312613853 -0.00196347024946249"
+        rpy="0 0 0" />
+      <mass
+        value="0.0304233356866151" />
+      <inertia
+        ixx="6.17475635039659E-06"
+        ixy="7.57777177217306E-08"
+        ixz="8.27000651064674E-08"
+        iyy="1.5916192298139E-05"
+        iyz="1.26875910127383E-08"
+        izz="1.56900791026998E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link16.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link16.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint16"
+    type="prismatic">
+    <origin
+      xyz="0.0095618 0.0033011 0.030543"
+      rpy="1.5708 1.5649 -3.1416" />
+    <parent
+      link="Empty_Link4" />
+    <child
+      link="Empty_Link16" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link5">
+    <inertial>
+      <origin
+        xyz="0.0130415872472552 0.00237922720677158 -0.0537561680384479"
+        rpy="0 0 0" />
+      <mass
+        value="0.0308167427673417" />
+      <inertia
+        ixx="2.04021907993351E-05"
+        ixy="-1.31741491119614E-08"
+        ixz="-6.59159876146721E-09"
+        iyy="2.07358437828842E-05"
+        iyz="-2.46637827142449E-08"
+        izz="7.44573697133542E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link5.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link5.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint5"
+    type="prismatic">
+    <origin
+      xyz="0.038732 -0.042773 0.052022"
+      rpy="2.678 0.62805 0.00016419" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link5" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link17">
+    <inertial>
+      <origin
+        xyz="0.116356797913384 -0.00108619642498643 -0.00196352016429181"
+        rpy="0 0 0" />
+      <mass
+        value="0.0304234497355605" />
+      <inertia
+        ixx="6.17473869663879E-06"
+        ixy="7.578477002693E-08"
+        ixz="8.27023390726578E-08"
+        iyy="1.59162019374663E-05"
+        iyz="1.26888601688852E-08"
+        izz="1.56900837322258E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link17.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link17.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint17"
+    type="prismatic">
+    <origin
+      xyz="0.009009 0.002614 0.030106"
+      rpy="-1.5708 1.5646 0" />
+    <parent
+      link="Empty_Link5" />
+    <child
+      link="Empty_Link17" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link6">
+    <inertial>
+      <origin
+        xyz="0.01304158745297 0.00237922734604687 -0.0537561679219806"
+        rpy="0 0 0" />
+      <mass
+        value="0.030816742702582" />
+      <inertia
+        ixx="2.04021908015098E-05"
+        ixy="-1.31741534874467E-08"
+        ixz="-6.59158769142781E-09"
+        iyy="2.07358437874977E-05"
+        iyz="-2.46637887080625E-08"
+        izz="7.44573677828646E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link6.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link6.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint6"
+    type="prismatic">
+    <origin
+      xyz="0.076396 -0.090845 -0.001665"
+      rpy="2.7108 -1.2335 3.1069" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link6" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link18">
+    <inertial>
+      <origin
+        xyz="0.116356250996736 -0.00108611634490127 -0.00196341150887474"
+        rpy="0 0 0" />
+      <mass
+        value="0.0304732454487052" />
+      <inertia
+        ixx="6.17476763132482E-06"
+        ixy="7.58021857177235E-08"
+        ixz="8.26895463183294E-08"
+        iyy="1.59161810217854E-05"
+        iyz="1.26839822865746E-08"
+        izz="1.56900713928145E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link18.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link18.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint18"
+    type="prismatic">
+    <origin
+      xyz="0.0098657 0.0024486 0.03158"
+      rpy="1.5708 1.5683 -3.1416" />
+    <parent
+      link="Empty_Link6" />
+    <child
+      link="Empty_Link18" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link7">
+    <inertial>
+      <origin
+        xyz="0.0130415896832255 0.00237923241898522 -0.0537561324427222"
+        rpy="0 0 0" />
+      <mass
+        value="0.030816734826387" />
+      <inertia
+        ixx="2.04021903100257E-05"
+        ixy="-1.31740605327252E-08"
+        ixz="-6.59192232694596E-09"
+        iyy="2.07358437780149E-05"
+        iyz="-2.46637213551877E-08"
+        izz="7.44573966471001E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link7.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link7.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint7"
+    type="prismatic">
+    <origin
+      xyz="0.00021047 -0.028255 -0.06548"
+      rpy="0.46365 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link7" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link19">
+    <inertial>
+      <origin
+        xyz="0.116355532367018 -0.00108583618991257 -0.00196290680950893"
+        rpy="0 0 0" />
+      <mass
+        value="0.0324232977046894" />
+      <inertia
+        ixx="6.175474861059E-06"
+        ixy="7.5916773877815E-08"
+        ixz="8.31767501137166E-08"
+        iyy="1.59166725910478E-05"
+        iyz="1.25140975591131E-08"
+        izz="1.56900075310273E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link19.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link19.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint19"
+    type="prismatic">
+    <origin
+      xyz="0.0092233 0.0025801 0.02859"
+      rpy="-1.5708 1.5695 0" />
+    <parent
+      link="Empty_Link7" />
+    <child
+      link="Empty_Link19" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link8">
+    <inertial>
+      <origin
+        xyz="0.0130415864865683 0.00237922725179473 -0.0537561726702125"
+        rpy="0 0 0" />
+      <mass
+        value="0.0308167439680563" />
+      <inertia
+        ixx="2.04021907604132E-05"
+        ixy="-1.31741483711914E-08"
+        ixz="-6.59158156046474E-09"
+        iyy="2.07358437953977E-05"
+        iyz="-2.466383202223E-08"
+        izz="7.44573699338126E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link8.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link8.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint8"
+    type="prismatic">
+    <origin
+      xyz="0.00015255 0.0021538 0.00013828"
+      rpy="1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link8" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link20">
+    <inertial>
+      <origin
+        xyz="0.116356611242415 -0.00108613587258265 -0.00196352147062709"
+        rpy="0 0 0" />
+      <mass
+        value="0.0304233382403536" />
+      <inertia
+        ixx="6.17346438090181E-06"
+        ixy="7.58934172496481E-08"
+        ixz="8.27006560677789E-08"
+        iyy="1.59161030900487E-05"
+        iyz="1.26838819693164E-08"
+        izz="1.56897810623119E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link20.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link20.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint20"
+    type="prismatic">
+    <origin
+      xyz="0.01005 0.0034109 0.02938"
+      rpy="-1.5708 1.5685 0" />
+    <parent
+      link="Empty_Link8" />
+    <child
+      link="Empty_Link20" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link9">
+    <inertial>
+      <origin
+        xyz="0.0130415879001244 0.00237922517498793 -0.0537561869126697"
+        rpy="0 0 0" />
+      <mass
+        value="0.0308167486098198" />
+      <inertia
+        ixx="2.04021909752081E-05"
+        ixy="-1.3174061592469E-08"
+        ixz="-6.5917927017709E-09"
+        iyy="2.07358441176463E-05"
+        iyz="-2.46637518429057E-08"
+        izz="7.44573716957822E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link9.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link9.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint9"
+    type="prismatic">
+    <origin
+      xyz="-0.047891 -0.028362 -0.018371"
+      rpy="0.49201 1.2739 0.029743" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link9" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link21">
+    <inertial>
+      <origin
+        xyz="0.116356367213988 -0.00108608580912233 -0.00196347239471955"
+        rpy="0 0 0" />
+      <mass
+        value="0.0304232429656266" />
+      <inertia
+        ixx="6.17474316390703E-06"
+        ixy="7.57742148499389E-08"
+        ixz="8.26918638214768E-08"
+        iyy="1.59161687901838E-05"
+        iyz="1.26840790458088E-08"
+        izz="1.56900799484047E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link21.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link21.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint21"
+    type="prismatic">
+    <origin
+      xyz="0.010336 0.0029847 0.02447"
+      rpy="-1.5708 1.5677 0" />
+    <parent
+      link="Empty_Link9" />
+    <child
+      link="Empty_Link21" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link10">
+    <inertial>
+      <origin
+        xyz="0.0130415871071897 0.00237922539299543 -0.0537561873841554"
+        rpy="0 0 0" />
+      <mass
+        value="0.0308567488256633" />
+      <inertia
+        ixx="2.04021909155267E-05"
+        ixy="-1.31740620719487E-08"
+        ixz="-6.59174208722799E-09"
+        iyy="2.07358441400544E-05"
+        iyz="-2.46637641291934E-08"
+        izz="7.44573788628418E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link10.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link10.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint10"
+    type="prismatic">
+    <origin
+      xyz="-0.015656 -0.10491 -0.06126"
+      rpy="0.47038 -0.64636 3.1303" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link10" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link22">
+    <inertial>
+      <origin
+        xyz="0.116356445443757 -0.00108612562644112 -0.00196348988409108"
+        rpy="0 0 0" />
+      <mass
+        value="0.0304732877117504" />
+      <inertia
+        ixx="6.17473247722833E-06"
+        ixy="7.5776462133998E-08"
+        ixz="8.26933542183768E-08"
+        iyy="1.59161714215192E-05"
+        iyz="1.26848178138964E-08"
+        izz="1.56900795055187E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link22.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link22.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint22"
+    type="prismatic">
+    <origin
+      xyz="0.0088469 0.0011773 0.029986"
+      rpy="1.5708 1.5682 -3.1416" />
+    <parent
+      link="Empty_Link10" />
+    <child
+      link="Empty_Link22" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link11">
+    <inertial>
+      <origin
+        xyz="0.0130415864822786 0.00237922508829748 -0.0537561820343899"
+        rpy="0 0 0" />
+      <mass
+        value="0.0308167469624186" />
+      <inertia
+        ixx="2.04021907565845E-05"
+        ixy="-1.31740543607563E-08"
+        ixz="-6.59170366134589E-09"
+        iyy="2.07358439701555E-05"
+        iyz="-2.46637444101535E-08"
+        izz="7.44573779740898E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link11.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link11.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint11"
+    type="prismatic">
+    <origin
+      xyz="0.051417 -0.10449 -0.047741"
+      rpy="0.46168 0.62285 3.1382" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link11" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link23">
+    <inertial>
+      <origin
+        xyz="0.116356521581134 -0.00108608486711723 -0.00196349042338499"
+        rpy="0 0 0" />
+      <mass
+        value="0.0304732987278342" />
+      <inertia
+        ixx="6.17474232520654E-06"
+        ixy="7.57743011244196E-08"
+        ixz="8.26920456738805E-08"
+        iyy="1.59161754940841E-05"
+        iyz="1.26839252774244E-08"
+        izz="1.56900886513055E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link23.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link23.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint23"
+    type="prismatic">
+    <origin
+      xyz="0.0093415 0.0027504 0.029341"
+      rpy="-1.5708 1.567 0" />
+    <parent
+      link="Empty_Link11" />
+    <child
+      link="Empty_Link23" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link12">
+    <inertial>
+      <origin
+        xyz="0.0130415864345089 0.00237922493504666 -0.0537561795732414"
+        rpy="0 0 0" />
+      <mass
+        value="0.0308167461438098" />
+      <inertia
+        ixx="2.04021908046734E-05"
+        ixy="-1.31740533571835E-08"
+        ixz="-6.59173279097995E-09"
+        iyy="2.07358439514167E-05"
+        iyz="-2.46637377844514E-08"
+        izz="7.44573717086184E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link12.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link12.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint12"
+    type="prismatic">
+    <origin
+      xyz="0.060996 -0.02828 -0.032831"
+      rpy="0.45653 -1.2519 0.0074918" />
+    <parent
+      link="base_link" />
+    <child
+      link="Empty_Link12" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+  <link
+    name="Empty_Link24">
+    <inertial>
+      <origin
+        xyz="0.116356086618487 -0.0010861019935172 -0.00196347564213264"
+        rpy="0 0 0" />
+      <mass
+        value="0.0304231612685958" />
+      <inertia
+        ixx="6.17475234833365E-06"
+        ixy="7.57935336880407E-08"
+        ixz="8.26933528831402E-08"
+        iyy="1.59161613522857E-05"
+        iyz="1.26874703456018E-08"
+        izz="1.56900668405655E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link24.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Empty_Link24.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint24"
+    type="prismatic">
+    <origin
+      xyz="0.009116 0.0028195 0.029246"
+      rpy="1.5708 1.5663 -3.1416" />
+    <parent
+      link="Empty_Link12" />
+    <child
+      link="Empty_Link24" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0.1"
+      effort="25"
+      velocity="0.02" />
+  </joint>
+</robot>

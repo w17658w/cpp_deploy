@@ -29,3 +29,20 @@ Thumbs.db
 
 # Local assistant settings
 .claude/
+
+# ---- 训练产物与日志（不进 git）----
+runs/
+training/record data - */
+training/*.log
+training/*_out.txt
+training/_cell_*.json
+training/_cell_*.txt
+
+# ---- 模型权重（默认忽略，精选的 actor.bin 显式保留）----
+models/*
+!models/actor.bin
+
+# ---- 可视化临时资源（leg_dirs 3D 图已移到 docs/）----
+training/three.min.js
+training/OrbitControls.js
+training/leg_dirs.json
