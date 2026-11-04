@@ -1,10 +1,23 @@
 import math
+import os
 import numpy as np
 from gym import spaces
+
+import yaml
 
 import genesis as gs
 
 _gs_inited = False
+
+
+def _load_robot_params():
+    """加载 sim-to-real 机器人物理参数（robot_params.yaml，与部署端 config.yaml 共用同一物理量）。"""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'robot_params.yaml')
+    with open(path, 'r', encoding='utf-8') as f:
+        return yaml.safe_load(f)
+
+
+ROBOT_PARAMS = _load_robot_params()
 
 
 def _ensure_gs_init(backend):
@@ -58,16 +71,16 @@ def _quat_multiply_batch(q1, q2):
 
 
 # spawn 四元数的共轭（= base_link 系 → 自然机身系的旋转；状态姿态乘它后，静止水平时=0，与实机归零后的姿态对齐）
-SPAWN_QUAT_INV = np.array([0.702, -0.066, -0.0696, -0.705], dtype=np.float32)
+SPAWN_QUAT_INV = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)  # 新版 base_link 出生即自然姿态（单位四元数），无需再旋转
 
 
 # ---- 障碍翻越任务参数（终点/障碍布局，训练与部署共用）----
-TARGET_Y = 2.4                   # 目标点 y（原 2.0，改远以容纳两个障碍）
-FIN_Y = 2.2                      # 到达终点判定 y（|x|<=0.15 且 y>=FIN_Y）
-OBSTACLE_YS = [0.8, 1.6]         # 两个 10cm 障碍中心 y
+TARGET_Y = 10000.0               # 一直往前走：目标点设远，让"朝目标"≈"朝+y"（原 2.4 = 走到固定点停下）
+FIN_Y = 10000.0                  # 一直往前走：终点设远，fin 永不触发（原 2.2）
+OBSTACLE_YS = [1.0, 2.0]         # 两个 10cm 障碍中心 y
 OBSTACLE_SIZE = (2.0, 0.1, 0.1)  # (x 2m, y 0.1m, z 0.1m)
 OBSTACLE_TOP_Z = 0.1             # 障碍顶高
-SPAWN_Z_FLAT = 0.198             # 平地机器人初始 z（= 波浪版 0.219 减掉驻点地形高 0.0209）
+SPAWN_Z_FLAT = float(ROBOT_PARAMS['robot']['spawn_z'])   # 平地初始 z（从 robot_params.yaml 读）
 SPAWN_Z_WAVE = 0.219             # 波浪地形初始 z
 
 
@@ -79,8 +92,8 @@ class VecRobotEnv:
 
         # 空间定义
         self.action_space = spaces.Box(low=np.array([0.01] * 12), high=np.array([0.09] * 12), dtype=np.float32)
-        # 34 维状态（真机可观测对齐版）：12 命令腿长 + 3 欧拉 + 3 角速度 + 12 触地 + 3 比力 + 1 姿态变化
-        self.state_space = spaces.Box(np.array([-5.0] * 34), np.array([5.0] * 34), dtype=np.float32)
+        # 36 维状态（真机可观测对齐版）：12 命令腿长 + 3 欧拉 + 3 角速度 + 12 触地 + 3 比力 + 3 姿态变化
+        self.state_space = spaces.Box(np.array([-5.0] * 36), np.array([5.0] * 36), dtype=np.float32)
 
         _ensure_gs_init(gs.gpu)
 
@@ -114,9 +127,9 @@ class VecRobotEnv:
             self.spawn_z = SPAWN_Z_FLAT
 
         self.robot = self.scene.add_entity(gs.morphs.URDF(    #往场景里添加机器人（URDF）
-            file="../assets/robot12/urdf/robot_6.urdf",
+            file=ROBOT_PARAMS['robot']['urdf_file'],
             pos=(-0.046, 0.005, self.spawn_z),
-            quat=(0.702, 0.066, 0.0696, 0.705),
+            quat=(1.0, 0.0, 0.0, 0.0),
         ))
         self.scene.build(n_envs=n_envs, env_spacing=(13.0, 13.0))   # 创建场景 8个并行，各场景间隔13m，避免碰撞
 
@@ -125,15 +138,18 @@ class VecRobotEnv:
         assert len(self._joint_dofs) == 24, f"期望 24 关节 dof，实际 {len(self._joint_dofs)}"
 
         # 动力学参数）
-        self.robot.set_dofs_kp(800.0, dofs_idx_local=self._joint_dofs)   #控制的Kp
-        self.robot.set_dofs_kv(80.0, dofs_idx_local=self._joint_dofs)    #控制的Kv
-        self.robot.set_dofs_force_range(-25.0, 25.0, dofs_idx_local=self._joint_dofs)  #控制的力范围   
+        _kp = ROBOT_PARAMS['joint']['kp']
+        _kv = ROBOT_PARAMS['joint']['kv']
+        _f = ROBOT_PARAMS['joint']['force_limit_N']
+        self.robot.set_dofs_kp(_kp, dofs_idx_local=self._joint_dofs)   #控制的Kp（从 robot_params.yaml 读）
+        self.robot.set_dofs_kv(_kv, dofs_idx_local=self._joint_dofs)    #控制的Kv
+        self.robot.set_dofs_force_range(-_f, _f, dofs_idx_local=self._joint_dofs)  #控制的力范围
 
         # ---- 物理参数----
         _base_link = next(l for l in self.robot.links if l.name == "base_link")  #找urdf文件中的base_link
         self._base_link_idx = _base_link.idx_local   # 供 _get_specific_force 读 base_link 线加速度
-        _base_link.set_mass(1.27)  #基座的质量
-        self.robot.set_friction(1.0)  #滑动摩擦系数（μ，对齐参考 PyBullet lateralFriction=1.0）
+        _base_link.set_mass(ROBOT_PARAMS['robot']['base_mass_kg'])  #基座的质量（从 robot_params.yaml 读）
+        self.robot.set_friction(ROBOT_PARAMS['robot']['friction'])  #滑动摩擦系数（从 robot_params.yaml 读）
         self.robot.set_friction_torsional(0.005)  #扭转摩擦（单位是【米】=接触斑半径；参考 spinningFriction=0.1 是无量纲，不能照抄 0.1，否则=10cm 巨脚扭死；Genesis 默认 0.005m=5mm）
         self.robot.set_friction_rolling(0.0)    #滚动摩擦系数（对齐参考 PyBullet rollingFriction=0）
         try:
@@ -147,13 +163,13 @@ class VecRobotEnv:
         self.window_start_pos = np.zeros((n_envs, 3), dtype=np.float32)   # 初始占位（首个窗口建立前不用）
         self.last_cmd = np.full((n_envs, 12), 0.03, dtype=np.float32)
         self.last_target = np.zeros((n_envs, 12), dtype=np.float32)   # 限速用：上一窗口实际下发目标（reset 后关节位置=0）
-        self.max_leg_velocity = 0.032   # 对齐原版 L16 电机 32mm/s（PyBullet maxVelocity）
+        self.max_leg_velocity = ROBOT_PARAMS['joint']['velocity_limit_m_s']   # 速度上限（从 robot_params.yaml 读，对齐 L16 电机）
         self.max_y_reached = np.zeros(n_envs, dtype=np.float32)
         self.milestone_count = np.zeros(n_envs, dtype=np.int32)
         self.fin_given = np.zeros(n_envs, dtype=bool)        # fin(+200) 一次性标志（与原版 fin_given 一致）
         self.action_old = np.zeros((n_envs, 24), dtype=np.float32)
         self.action_24 = np.zeros((n_envs, 24), dtype=np.float32)
-        self._motion_change = None          # (N,1) 本步姿态变化量（step 里算好缓存，_get_state 直接读）
+        self._motion_change = None          # (N,3) 三欧拉角原始弧度变化（带正负，step 缓存，_get_state 读）
         self.index = []
         self.index_old = []
         self.hand_control = 1
@@ -172,7 +188,7 @@ class VecRobotEnv:
             self.scene.reset(envs_idx=idx.tolist())
 
         pos = np.tile(np.array([-0.046, 0.005, self.spawn_z], dtype=np.float32), (idx.size, 1))
-        quat = np.tile(np.array([0.702, 0.066, 0.0696, 0.705], dtype=np.float32), (idx.size, 1))
+        quat = np.tile(np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32), (idx.size, 1))
         self.robot.set_pos(pos, envs_idx=idx.tolist(), zero_velocity=True)
         self.robot.set_quat(quat, envs_idx=idx.tolist(), zero_velocity=True)
         self.robot.set_dofs_position(np.zeros((idx.size, 24), dtype=np.float32),
@@ -192,7 +208,7 @@ class VecRobotEnv:
             self._motion_change[idx] = 0.0
 
     def reset(self, envs_idx=None):
-        """全部或部分重置。返回 (N,34) 状态。"""
+        """全部或部分重置。返回 (N,36) 状态。"""
         if envs_idx is None:
             self._reset_envs(np.arange(self.n_envs))
         else:
@@ -200,7 +216,7 @@ class VecRobotEnv:
         return self._get_state(), self.hand_control
 
     def reset_dones(self, dones):
-        """将 done=True 的环境单独重置（异步重置），返回更新后的 (N,34) 状态。"""
+        """将 done=True 的环境单独重置（异步重置），返回更新后的 (N,36) 状态。"""
         done_idx = np.nonzero(dones)[0]
         if done_idx.size > 0:
             self._reset_envs(done_idx)
@@ -208,7 +224,7 @@ class VecRobotEnv:
 
     # ------------------------------------------------------------------
     def step(self, actions):
-        """批量推进：actions (N,12) -> (N,34) 状态 / (N,) reward / (N,) done / info。"""
+        """批量推进：actions (N,12) -> (N,36) 状态 / (N,) reward / (N,) done / info。"""
         actions = np.clip(np.asarray(actions, dtype=np.float32), 0.01, 0.09)
         self.last_cmd = actions.copy()   # [0:12] 用「原始目标值」（限速前），与部署端 last_cmd_m 一致
         # 限速（对齐原版 maxVelocity=0.032）：每 env.step 推进 30 物理步=0.125s，最大增量 0.004m
@@ -234,7 +250,9 @@ class VecRobotEnv:
         # motion_change：本步姿态变化，在 step 里算一次并缓存；_get_state 直接读，
         #   避免 step + reset_dones 重复调 _get_state 把 _prev_ori 刷新、导致 state[33] 恒 0
         ori_new = _quat_to_euler_batch(self._get_quat())
-        self._motion_change = np.minimum(1.0, np.abs(ori_new - ori_old).sum(axis=-1) / 0.05)[:, None]
+        delta = ori_new - ori_old
+        delta = (delta + np.pi) % (2 * np.pi) - np.pi   # 角度差 wrap 到 (-π, π]（防 roll/yaw 跨 ±π 跳变）
+        self._motion_change = delta                     # (N,3) 三欧拉角原始弧度变化（带正负，不归一化）
 
         # 卡死 flag：y 无位移 且 z 不上升 才累计（翻墙时顶墙抬升 dz>0 不算卡死）
         dy = body_new[:, 1] - body_old[:, 1]
@@ -293,13 +311,13 @@ class VecRobotEnv:
             + np.where(body_new[:, 1] >= 1.0, 30.0, 0.0)
 
         # reward_distance：密集"保持在直线路径(x=0)上"惩罚（原 PyBullet 版有，Genesis 移植时被 climb 顶替丢了）
-        #   到直线 x=0（y∈[0,3]）的最近距离，超 0.3m 死区后 -0.5×距离；给策略"贴直线走"的稠密梯度
+        #   到直线 x=0（y∈[0,3]）的最近距离，超 0.15m 死区后 -0.5×距离；给策略"贴直线走"的稠密梯度
         x = body_new[:, 0]
         y = body_new[:, 1]
         dist_to_line = np.abs(x)
         dist_to_line = np.where(y < 0.0, np.sqrt(x ** 2 + y ** 2), dist_to_line)
         dist_to_line = np.where(y > 3.0, np.sqrt(x ** 2 + (y - 3.0) ** 2), dist_to_line)
-        reward_distance = -0.5 * np.maximum(0.0, dist_to_line - 0.3)
+        reward_distance = -0.5 * np.maximum(0.0, dist_to_line - 0.15)
 
         # 奖励：6 项 = alive + progress + distance + velocity + fin + milestone
         rewards = (alive_r + progress_r + reward_distance + velocity_penalty
@@ -385,8 +403,8 @@ class VecRobotEnv:
 
     # ------------------------------------------------------------------
     def _get_state(self):
-        """批量 34 维状态（真机可观测对齐版）：
-        [0:12] 命令腿长 | [12:15] 欧拉角 | [15:18] 机体系角速度 | [18:30] 触地 | [30:33] 比力 | [33] 姿态变化。"""
+        """批量 36 维状态（真机可观测对齐版）：
+        [0:12] 命令腿长 | [12:15] 欧拉角 | [15:18] 机体系角速度 | [18:30] 触地 | [30:33] 比力 | [33:36] 三欧拉角姿态变化。"""
         # 12 命令腿长归一化（-R 无位置反馈，状态只保留"上一命令"，不用真实 dof_pos）
         last_cmd_norm = 2.0 * (self.last_cmd - 0.05) / 0.1     # (N,12)
 
@@ -416,10 +434,10 @@ class VecRobotEnv:
 
         # motion_change：读 step() 里算好的本步姿态变化（避免重复调 _get_state 刷新导致恒 0）
         motion_change = (self._motion_change if self._motion_change is not None
-                         else np.zeros((self.n_envs, 1), dtype=np.float32))
+                         else np.zeros((self.n_envs, 3), dtype=np.float32))
 
         return np.concatenate([last_cmd_norm, body_ori, w, contact_link,
-                               sf_body, motion_change], axis=-1)   # (N, 34)
+                               sf_body, motion_change], axis=-1)   # (N, 36)
 
 
 if __name__ == "__main__":

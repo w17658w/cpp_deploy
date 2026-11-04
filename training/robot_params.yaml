@@ -1,0 +1,19 @@
+# sim-to-real 机器人物理参数（仿真与实机必须一致，改动需同步部署端 config.yaml）
+# 训练代码 env_genesis_vec.py 从这里读取，改参数不用动训练代码。
+
+robot:
+  urdf_file: urdf/sphere_robot_aligned.urdf   # 新版 URDF（正二十面体腿方向，SolidWorks CAD 导出）
+  base_mass_kg: 2.178                          # 机身质量（CAD 实测，旧模型是 1.27）
+  spawn_z: 0.26                                # 出生高度（leg3 脚贴地，单脚落定三脚）
+  friction: 1.0                                # 滑动摩擦系数（对齐 PyBullet lateralFriction=1.0）
+
+joint:                                         # 关节（每条腿 actuator + slide 两段，共 24 关节）
+  stroke_m: 0.1                                # 每段行程 100mm
+  force_limit_N: 25                            # 力上限
+  velocity_limit_m_s: 0.032                    # 速度上限 32mm/s（对齐 L16 电机）
+  kp: 800.0                                    # 位置控制增益
+  kv: 80.0                                     # 阻尼
+
+motor:                                         # ACTUONIX L16 电动缸
+  model: L16-100-35-6-R
+  whole_mass_kg: 0.074                         # 每台完整 L16 质量

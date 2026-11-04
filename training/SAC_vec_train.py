@@ -61,7 +61,7 @@ CHECKPOINT_PATH = os.path.join('record data - net', 'checkpoint_vec.pth')
 # 课程学习：先 "flat"（平地无障碍）练走路，练好后再改成 "obstacle" 续训翻墙
 TERRAIN = "flat"   # "flat"=平地 | "obstacle"=平地+两个10cm墙 | "wave"=波浪地形（原版）
 env = VecRobotEnv(n_envs=N_ENVS, render=(MODE == 'play' or VIEW), terrain=TERRAIN)
-agent = soft_actor_critic_agent(env_state_dim := 34, env.action_space,
+agent = soft_actor_critic_agent(env_state_dim := 36, env.action_space,
                                 device=device, hidden_size=256, seed=seed,
                                 lr=LEARNING_RATE, gamma=gamma, tau=tau,
                                 alpha=alpha, target_entropy=TARGET_ENTROPY)
@@ -71,7 +71,7 @@ print(f"并行环境: {N_ENVS} | 状态维 {env_state_dim} | 动作维 {env.acti
 
 
 def select_actions_batch(states, eval=False):
-    """批量采样动作：states (N,34) -> actions (N,12)。eval=True 用均值（确定性）。"""
+    """批量采样动作：states (N,36) -> actions (N,12)。eval=True 用均值（确定性）。"""
     s = torch.FloatTensor(np.asarray(states, dtype=np.float32)).to(device)
     with torch.no_grad():
         if eval:
@@ -122,21 +122,31 @@ def load_checkpoint(path):
 
 
 def run_eval(n_eps):
-    """确定性评估：跑 n_eps 轮 eval（均值动作、无噪声），返回平均每轮奖励。"""
+    """确定性评估：跑 n_eps 轮 eval（均值动作、无噪声），返回 (均奖, 6项奖励分解均值, 峰值Y均值)。"""
     total = 0.0
+    comp_rounds = []   # 每轮 6 分量
+    maxy_rounds = []   # 每轮峰值 Y
     for _ in range(n_eps):
         t_state, _ = env.reset()
         t_r = 0.0
+        comp_r = np.zeros(6, dtype=np.float64)
+        maxy_r = 0.0
         for step in range(max_steps):
             if step % ACTION_REPEAT == 0:
                 t_action = select_actions_batch(t_state, eval=True)
-            t_next, t_rewards, t_dones, _ = env.step(t_action)
+            t_next, t_rewards, t_dones, info = env.step(t_action)
             t_r += float(t_rewards.mean())
+            comp_r += info["reward_comp"].mean(axis=0)
+            maxy_r = max(maxy_r, float(info["max_y"].max()))
             t_state = env.reset_dones(t_dones)
             if np.all(t_dones):
                 break
         total += t_r
-    return total / n_eps
+        comp_rounds.append(comp_r)
+        maxy_rounds.append(maxy_r)
+    return (total / n_eps,
+            np.mean(comp_rounds, axis=0) if comp_rounds else np.zeros(6),
+            np.mean(maxy_rounds) if maxy_rounds else 0.0)
 
 
 def _mini_plot(img, x0, y0, x1, y1, data, color, title, hline=None, hlabel=None):
@@ -199,6 +209,49 @@ def _bar_plot(img, x0, y0, x1, y1, labels, values, title):
         cv2.putText(img, '%.2f' % v, (x1 - 64, by + bh - 1), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (60, 60, 60), 1)
 
 
+def _multi_curve(img, x0, y0, x1, y1, curves, labels, colors, title):
+    """OpenCV 多曲线子图：curves 为 list of 1D 序列，各画一条（共用 min/max 缩放），图例标在底部。"""
+    import cv2
+    cv2.rectangle(img, (x0, y0), (x1, y1), (235, 235, 235), -1)
+    cv2.rectangle(img, (x0, y0), (x1, y1), (0, 0, 0), 1)
+    cv2.putText(img, title, (x0 + 6, y0 + 16), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1)
+    allv = [float(v) for c in curves for v in c if np.isfinite(v)]
+    if not allv:
+        return
+    vmin, vmax = min(allv), max(allv)
+    if vmin == vmax:
+        vmin -= 1.0
+        vmax += 1.0
+    n = max(len(c) for c in curves)
+    for ci, c in enumerate(curves):
+        c = [float(v) for v in c]
+        if len(c) == 0:
+            continue
+        pts = []
+        for i, v in enumerate(c):
+            px = x0 + int(i / (n - 1) * (x1 - x0)) if n > 1 else (x0 + x1) // 2
+            py = y0 + int((1.0 - (v - vmin) / (vmax - vmin)) * (y1 - y0))
+            pts.append((px, py))
+        if len(pts) == 1:
+            cv2.circle(img, pts[0], 2, colors[ci], -1)
+        else:
+            for a, b in zip(pts, pts[1:]):
+                cv2.line(img, a, b, colors[ci], 1)
+    # 图例（底部，多行自动换行）
+    lx, ly = x0 + 4, y1 - 10
+    for label, color in zip(labels, colors):
+        tw, th = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.34, 1)[0]
+        if lx + tw > x1 - 4:
+            lx = x0 + 4
+            ly -= th + 4
+        cv2.putText(img, label, (lx, ly), cv2.FONT_HERSHEY_SIMPLEX, 0.34, color, 1)
+        lx += tw + 8
+
+
+COMP_LABELS = ["alive", "progress", "distance", "velocity", "fin", "milestone"]
+COMP_COLORS = [(200, 60, 60), (40, 160, 60), (60, 110, 210), (200, 140, 0), (180, 80, 200), (60, 180, 180)]
+
+
 def write_diagnostics(ep):
     """每 100 轮：写 process_vec_{ep}.xls + 画诊断 PNG（2x4，含参考线/奖励分解/外置/回合轨迹）。
 
@@ -229,9 +282,11 @@ def write_diagnostics(ep):
     _sheet('scores', scores_array)
     _sheet('avg_scores', [float(np.mean(scores_array[max(0, i - 99):i + 1])) for i in range(len(scores_array))])
     _sheet('test_scores', test_scores_array)
+    _sheet('eval_max_y', eval_max_y_array)
     _sheet('max_y', max_y_array)
     _sheet('alpha', alpha_array)
     _sheet_cols('comp', comp_array)
+    _sheet_cols('eval_comp', eval_comp_array)
     _sheet_cols('extras', extra_array)
     if trace_buf is not None:
         ty, ta, tp, tr = trace_buf
@@ -258,14 +313,15 @@ def write_diagnostics(ep):
     avg_arr = [float(np.mean(scores_array[max(0, i - 99):i + 1])) for i in range(len(scores_array))]
     _mini_plot(img, *cells[0], avg_arr, (200, 60, 60), 'Avg(100)', hline=random_baseline, hlabel='随机基线')
     _mini_plot(img, *cells[1], test_scores_array, (60, 140, 60), 'Test(eval)', hline=random_baseline, hlabel='随机基线')
-    _mini_plot(img, *cells[2], max_y_array, (200, 140, 0), 'MaxY(m)', hline=2.0, hlabel='目标2.0')
+    _multi_curve(img, *cells[2], [max_y_array, eval_max_y_array],
+                 ["训练MaxY", "eval确定性Y"], [(200, 140, 0), (0, 120, 200)], 'MaxY(m)')
     _mini_plot(img, *cells[3], alpha_array, (200, 80, 200), 'Alpha')
     comp_np = np.asarray(comp_array, dtype=np.float64)
-    extra_np = np.asarray(extra_array, dtype=np.float64)
-    comp_avg = np.mean(comp_np[-100:], axis=0) if len(comp_np) else np.zeros(6)
-    extra_avg = np.mean(extra_np[-100:], axis=0) if len(extra_np) else np.zeros(5)
-    _bar_plot(img, *cells[4], ["alive", "progress", "distance", "velocity", "fin", "milestone"], list(comp_avg), 'Comp(近100均值)')
-    _bar_plot(img, *cells[5], ["force", "x_line", "height", "back", "partial"], list(extra_avg), 'Extras(近100均值)')
+    train_curves = [comp_np[:, j] for j in range(6)] if len(comp_np) else [[] for _ in range(6)]
+    _multi_curve(img, *cells[4], train_curves, COMP_LABELS, COMP_COLORS, 'Comp训练(每点一局)')
+    eval_np = np.asarray(eval_comp_array, dtype=np.float64)
+    eval_curves = [eval_np[:, j] for j in range(6)] if len(eval_np) else [[] for _ in range(6)]
+    _multi_curve(img, *cells[5], eval_curves, COMP_LABELS, COMP_COLORS, 'Comp_eval(确定性)')
     if trace_buf is not None:
         ty, ta, tp, tr = trace_buf
         _mini_plot(img, *cells[6], list(ty), (30, 110, 210), '轨迹y(t)')
@@ -306,6 +362,8 @@ scores_deque = []           # 每轮 N 个环境的平均奖励
 scores_array = []           # 每轮均奖（诊断）
 max_y_array = []            # 每轮峰值 Y（诊断）
 test_scores_array = []      # 每 test_interval 轮的 eval 均奖
+eval_comp_array = []        # 每 test_interval 轮 eval 的六项奖励分解 (M,6)
+eval_max_y_array = []       # 每 test_interval 轮 eval 的峰值 Y（确定性）
 alpha_array = []            # 每 100 轮的 alpha
 best_max_y = 0.0            # 已存档最佳峰值 Y
 comp_array = []             # 每轮六项奖励分解均值 (ep,6)
@@ -428,8 +486,10 @@ for i_episode in range(start_episode, num_episodes + 1):
 
     # 确定性评估（eval）：每 test_interval 轮
     if i_episode % test_interval == 0:
-        avg_test = run_eval(test_episodes)
+        avg_test, eval_comp, eval_max_y = run_eval(test_episodes)
         test_scores_array.append(avg_test)
+        eval_comp_array.append(eval_comp)
+        eval_max_y_array.append(eval_max_y)
         print(f"  [eval] ep{i_episode} 确定性均奖 {avg_test:8.2f}")
         states, _ = env.reset()   # eval 结束后恢复训练初始状态
 

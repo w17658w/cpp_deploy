@@ -39,7 +39,7 @@ enable_axis_calib: true           # 安装角补偿：true=标定时自动抓当
 # ---- 触地 GPIO（香橙派直读，12 路压力传感器 DO）----
 # 电平警告：香橙派 GPIO 是 3.3V。若传感器模块 5V 供电且 DO 输出 5V，必须加电平转换，否则可能烧板。
 contact_gpio_chip: "/dev/gpiochip0"     # gpiochip 设备（用 gpioinfo 查）
-contact_gpio_lines: 0,1,2,3,4,5,6,7,8,9,10,11   # 12 根 GPIO line 号（按实际接线填）
+contact_gpio_lines: 41,139,96,357,356,140,141,36,97,99,38,98   # 12 根 GPIO line 号（A733，按 leg_01~leg_12 顺序）
 contact_active_high: true               # 有效电平（true=高电平表示触地，按模块实际改）
 
 # ---- 舵机（L16-100-35-6-R）----
