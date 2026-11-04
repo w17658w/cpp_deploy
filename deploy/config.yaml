@@ -16,10 +16,10 @@ control_hz: 1.0                   # 推理/发动作频率（训练时 ACTION_RE
 imu_read_hz: 50                   # IMU 读取线程目标刷新频率
 
 # ---- 权重 ----
-weights_path: "../models/actor.bin"  # 34 维网络（tools/export_weights.py 导出，放在仓库根 models/ 下）
+weights_path: "../models/actor.bin"  # 36 维网络（tools/export_weights.py 导出，放在仓库根 models/ 下）
 
 # ---- 网络维度（与训练一致，一般不改）----
-obs_dim: 34
+obs_dim: 36
 hidden_size: 256
 action_dim: 12
 
@@ -28,9 +28,6 @@ leg_length_mid: 0.05              # 命令腿长归一化中心 (m)：norm = 2*(
 leg_length_span: 0.1              # 命令腿长归一化跨度 (m)
 action_low: 0.01                  # 动作下限 (m)
 action_high: 0.09                 # 动作上限 (m)
-
-# ---- 卡死量（真机只留姿态项，位置项已随状态改版移除）----
-motion_ori_ref: 0.05              # 姿态项参考 (rad)
 
 # ---- WT901 量程 / 零偏 / 轴对齐 ----
 accel_range_g: 16                 # 加速度量程（手册确认 ±16g）

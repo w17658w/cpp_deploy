@@ -1,7 +1,7 @@
 // main.cpp — 双线程推理主程序（Zero 3W）
 //
 // 线程 A（采集）: 读 IMU（含加速度）+ 读触地 GPIO，刷新共享 latest_state
-// 线程 B（主线程/决策）: 按 control_hz 快照 -> 组装 34 维 -> 前向 -> 12 动作 -> 下行帧(仅脉宽)
+// 线程 B（主线程/决策）: 按 control_hz 快照 -> 组装 36 维 -> 前向 -> 12 动作 -> 下行帧(仅脉宽)
 //
 // 运行:  ./cpp_deploy [config.yaml]   （默认当前目录 config.yaml）
 #include <atomic>
@@ -107,8 +107,7 @@ int main(int argc, char** argv) {
 
     // 状态组装
     StateBuilder sb;
-    sb.init(cfg.getDouble("leg_length_mid"), cfg.getDouble("leg_length_span"),
-            cfg.getDouble("motion_ori_ref"));
+    sb.init(cfg.getDouble("leg_length_mid"), cfg.getDouble("leg_length_span"));
 
     // 舵机映射
     ActuatorMap act_map;
@@ -176,7 +175,7 @@ int main(int argc, char** argv) {
     auto ctrl_period = std::chrono::microseconds((long long)(1e6 / ctrl_hz));
 
     // ---- 决策循环（线程 B）----
-    float obs[34];
+    float obs[36];
     float action[12];
     uint16_t pulse[12];
     uint8_t down[DOWN_LEN];
@@ -192,7 +191,7 @@ int main(int argc, char** argv) {
             snap = sh.st;
         }
 
-        // 组装 34 维 -> 前向 -> 12 动作
+        // 组装 36 维 -> 前向 -> 12 动作
         sb.build(snap, obs);
         net.forward(obs, action);
 

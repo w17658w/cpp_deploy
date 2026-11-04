@@ -4,17 +4,23 @@
 #include <cmath>
 #include <algorithm>
 
-void StateBuilder::init(double leg_mid, double leg_span, double ori_ref) {
+void StateBuilder::init(double leg_mid, double leg_span) {
     mid_ = leg_mid;
     span_ = leg_span;
-    ori_ref_ = ori_ref;
 }
 
 void StateBuilder::resetMotion() {
     has_prev_ = false;
 }
 
-void StateBuilder::build(const RobotState& s, float obs[34]) {
+static double wrapPi(double a) {
+    const double PI = 3.14159265358979323846;
+    while (a >  PI) a -= 2.0 * PI;
+    while (a < -PI) a += 2.0 * PI;
+    return a;
+}
+
+void StateBuilder::build(const RobotState& s, float obs[36]) {
     // [0..11] 命令腿长归一化（-R 无位置反馈，用上一命令）
     for (int i = 0; i < 12; ++i)
         obs[i] = (float)(2.0 * (s.last_cmd_m[i] - mid_) / span_);
@@ -38,15 +44,14 @@ void StateBuilder::build(const RobotState& s, float obs[34]) {
     obs[31] = (float)s.ay_g;
     obs[32] = (float)s.az_g;
 
-    // [33] 卡死量（仅姿态变化项 d_ori/ori_ref；真机无定位，无位置项）
-    double motion = 0.0;
+    // [33..35] 三欧拉角原始弧度变化（带正负，wrapped 到 (-π,π]）
     if (has_prev_) {
-        double d_ori = std::fabs(s.roll - prev_roll_)
-                     + std::fabs(s.pitch - prev_pitch_)
-                     + std::fabs(s.yaw - prev_yaw_);
-        motion = std::min(1.0, d_ori / ori_ref_);
+        obs[33] = (float)wrapPi(s.roll  - prev_roll_);
+        obs[34] = (float)wrapPi(s.pitch - prev_pitch_);
+        obs[35] = (float)wrapPi(s.yaw   - prev_yaw_);
+    } else {
+        obs[33] = obs[34] = obs[35] = 0.0f;
     }
-    obs[33] = (float)motion;
 
     // 更新上一帧姿态
     prev_roll_ = s.roll;

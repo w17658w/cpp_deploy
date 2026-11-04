@@ -10,7 +10,7 @@ export_weights.py — 把训练好的 SAC Actor 权重(.pth)导出为 C++ 可读
     2. checkpoint  —— 含 'policy' key 的 dict（脚本自动取 ckpt['policy']）
 
 导出布局（全部 float32，小端，与 C++ 端按同一顺序读取）:
-    [W1]   256*34  = 8704    net.0.weight   (行主序 [out][in])
+    [W1]   256*36  = 9216    net.0.weight   (行主序 [out][in])
     [b1]   256               net.0.bias
     [W2]   256*256 = 65536   net.2.weight
     [b2]   256               net.2.bias
@@ -18,10 +18,10 @@ export_weights.py — 把训练好的 SAC Actor 权重(.pth)导出为 C++ 可读
     [b3]   24                net.4.bias
     [scale] 12               action_scale = 0.04   (不在 state_dict 里，这里写死)
     [bias]  12               action_bias  = 0.05
-总计 80944 个 float32 = 323776 字节
+总计 81456 个 float32 = 325824 字节
 
 网络结构（GaussianPolicy, sac_agent.py，hidden_size=256）:
-    输入 34 -> Linear(34,256) -> ReLU -> Linear(256,256) -> ReLU -> Linear(256,24)
+    输入 36 -> Linear(36,256) -> ReLU -> Linear(256,256) -> ReLU -> Linear(256,24)
     前 12 维是均值 mean，后 12 维是 log_std
     评估动作: action = tanh(mean) * action_scale + action_bias  ∈ [0.01, 0.09] m
 
@@ -37,8 +37,8 @@ ACTION_SCALE = (0.09 - 0.01) / 2.0   # 0.04
 ACTION_BIAS = (0.09 + 0.01) / 2.0    # 0.05
 ACTION_DIM = 12
 
-# 网络维度（与 sac_agent.py 的 hidden_size=256, obs_dim=34 一致）
-OBS_DIM, HIDDEN = 34, 256
+# 网络维度（与 sac_agent.py 的 hidden_size=256, obs_dim=36 一致）
+OBS_DIM, HIDDEN = 36, 256
 OUT_DIM = ACTION_DIM * 2             # 24
 
 
@@ -68,7 +68,7 @@ def main():
     # 去掉可能的 'policy.' 前缀，统一成裸 key
     clean = {k[7:] if k.startswith('policy.') else k: v for k, v in sd.items()}
 
-    w1 = to_np(clean['net.0.weight'])   # [256, 34]
+    w1 = to_np(clean['net.0.weight'])   # [256, 36]
     b1 = to_np(clean['net.0.bias'])     # [256]
     w2 = to_np(clean['net.2.weight'])   # [256, 256]
     b2 = to_np(clean['net.2.bias'])     # [256]

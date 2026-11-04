@@ -3,14 +3,14 @@
   "note": "训练端(robot12/training) 与部署端(robot12/deploy) 共享的状态/动作/权重格式契约。两边都遵守，但不共享运行环境（部署端无 Python/Genesis/PyTorch）。",
 
   "state": {
-    "dim": 34,
+    "dim": 36,
     "layout": [
       {"idx": "0:12",   "name": "last_cmd_norm", "desc": "原始目标腿长(限速前)，norm = 2*(cmd-0.05)/0.1", "frame": "-"},
       {"idx": "12:15",  "name": "euler",         "desc": "roll/pitch/yaw（自然机身系，rad）", "frame": "body"},
       {"idx": "15:18",  "name": "ang_vel",       "desc": "角速度（机体系，rad/s）", "frame": "body"},
       {"idx": "18:30",  "name": "contact",       "desc": "12 腿触地（0/1）", "frame": "-"},
       {"idx": "30:33",  "name": "specific_force","desc": "比力（机体系，g 单位）", "frame": "body"},
-      {"idx": "33",     "name": "motion_change", "desc": "姿态变化量（本步，归一化 0~1）", "frame": "-"}
+      {"idx": "33:36",  "name": "motion_change", "desc": "三欧拉角原始弧度变化（本步，带正负，rad）", "frame": "-"}
     ]
   },
 
@@ -23,14 +23,14 @@
   },
 
   "network": {
-    "layers": [34, 256, 256, 24],
+    "layers": [36, 256, 256, 24],
     "activation": "ReLU",
     "output": "前 12 维 mean，后 12 维 log_std"
   },
 
   "weights": {
-    "actor_bin_layout": ["W1(256,34)", "b1(256)", "W2(256,256)", "b2(256)", "W3(24,256)", "b3(24)", "scale(12)", "bias(12)"],
-    "bytes": 323776,
+    "actor_bin_layout": ["W1(256,36)", "b1(256)", "W2(256,256)", "b2(256)", "W3(24,256)", "b3(24)", "scale(12)", "bias(12)"],
+    "bytes": 325824,
     "current_source": "vec_weights_best_ep251_1.46.pth（max_y=1.46m，flat 平地，训练中）",
     "export_script": "deploy/tools/export_weights.py"
   }
