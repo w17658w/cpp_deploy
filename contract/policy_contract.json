@@ -1,16 +1,17 @@
 {
-  "version": "1.0",
-  "note": "训练端(robot12/training) 与部署端(robot12/deploy) 共享的状态/动作/权重格式契约。两边都遵守，但不共享运行环境（部署端无 Python/Genesis/PyTorch）。",
+  "version": "1.1",
+  "note": "训练端(robot6_sac_goal) 与部署端(robot12/deploy) 共享的状态/动作/权重格式契约。v1.1：obs 从 36 维升到 38 维，最后两维由世界系目标方向改为【相对机体系】 cos(θ−yaw), sin(θ−yaw)；部署端必须用 IMU yaw 自己旋转，不能直接填外部发来的绝对 cos/sin。",
 
   "state": {
-    "dim": 36,
+    "dim": 38,
     "layout": [
       {"idx": "0:12",   "name": "last_cmd_norm", "desc": "原始目标腿长(限速前)，norm = 2*(cmd-0.05)/0.1", "frame": "-"},
       {"idx": "12:15",  "name": "euler",         "desc": "roll/pitch/yaw（自然机身系，rad）", "frame": "body"},
       {"idx": "15:18",  "name": "ang_vel",       "desc": "角速度（机体系，rad/s）", "frame": "body"},
       {"idx": "18:30",  "name": "contact",       "desc": "12 腿触地（0/1）", "frame": "-"},
       {"idx": "30:33",  "name": "specific_force","desc": "比力（机体系，g 单位）", "frame": "body"},
-      {"idx": "33:36",  "name": "motion_change", "desc": "三欧拉角原始弧度变化（本步，带正负，rad）", "frame": "-"}
+      {"idx": "33:36",  "name": "motion_change", "desc": "三欧拉角原始弧度变化（本步，带正负，rad）", "frame": "-"},
+      {"idx": "36:38",  "name": "cmd_dir_rel",   "desc": "目标方向【相对机体系】 = [cos(θ_cmd−yaw), sin(θ_cmd−yaw)]；θ_cmd 来自外部指令通道（未启用时默认 180°）", "frame": "body"}
     ]
   },
 
@@ -23,15 +24,25 @@
   },
 
   "network": {
-    "layers": [36, 256, 256, 24],
+    "layers": [38, 256, 256, 24],
     "activation": "ReLU",
     "output": "前 12 维 mean，后 12 维 log_std"
   },
 
   "weights": {
-    "actor_bin_layout": ["W1(256,36)", "b1(256)", "W2(256,256)", "b2(256)", "W3(24,256)", "b3(24)", "scale(12)", "bias(12)"],
-    "bytes": 325824,
-    "current_source": "vec_weights_best_ep251_1.46.pth（max_y=1.46m，flat 平地，训练中）",
+    "actor_bin_layout": ["W1(256,38)", "b1(256)", "W2(256,256)", "b2(256)", "W3(24,256)", "b3(24)", "scale(12)", "bias(12)"],
+    "bytes": 327872,
+    "current_source": "待训练侧『相对机体系 obs』收敛后从 best_ep 导出",
     "export_script": "deploy/tools/export_weights.py"
+  },
+
+  "cmd_link": {
+    "status": "reserved",
+    "note": "WiFiLink UDP 方向通道方案未最终拍板。接口设计见 src/io/cmd_link.h（未提供 .cpp，不参与编译）。未启用时 RobotState.cmd_cos/cmd_sin 保持默认 -1/0（=180°）。",
+    "frame_bytes": 6,
+    "frame_layout": "0xA5 / 0x01 / seq / int8(cosθ*127) / int8(sinθ*127) / CRC8(poly=0x07) over bytes[0..4]",
+    "default_port": 5005,
+    "default_timeout_ms": 500,
+    "default_dir_deg": 180
   }
 }

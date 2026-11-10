@@ -33,7 +33,8 @@ struct SharedState {
 
 // ---------- 线程 A：采集 ----------
 static void acquireLoop(Serial* imu, Wt901* wt, ContactGpio* gpio, MountCalib* mount,
-                        SharedState* sh, double imu_hz, std::atomic<bool>* run) {
+                        SharedState* sh, double imu_hz, const double imu_pos[3],
+                        std::atomic<bool>* run) {
     auto period = std::chrono::microseconds((long long)(1e6 / imu_hz));
     while (run->load()) {
         auto next = std::chrono::steady_clock::now() + period;
@@ -54,9 +55,35 @@ static void acquireLoop(Serial* imu, Wt901* wt, ContactGpio* gpio, MountCalib* m
             sh->st.wx    = w_r[0];
             sh->st.wy    = w_r[1];
             sh->st.wz    = w_r[2];
-            sh->st.ax_g  = f_r[0];
-            sh->st.ay_g  = f_r[1];
-            sh->st.az_g  = f_r[2];
+
+            // 比力杠杆臂修正：sf_cm = sf_imu - (α×r + ω×(ω×r))，抵消 IMU 不在质心的额外加速度
+            static double prev_w[3] = {0, 0, 0};
+            static bool has_prev_w = false;
+            static auto prev_t = std::chrono::steady_clock::now();
+            auto now = std::chrono::steady_clock::now();
+            double dt = std::chrono::duration<double>(now - prev_t).count();
+            prev_t = now;
+            double alpha[3] = {0, 0, 0};
+            if (has_prev_w && dt > 1e-6) {
+                alpha[0] = (w_r[0] - prev_w[0]) / dt;
+                alpha[1] = (w_r[1] - prev_w[1]) / dt;
+                alpha[2] = (w_r[2] - prev_w[2]) / dt;
+            }
+            prev_w[0] = w_r[0]; prev_w[1] = w_r[1]; prev_w[2] = w_r[2];
+            has_prev_w = true;
+            double wxr[3] = { w_r[1] * imu_pos[2] - w_r[2] * imu_pos[1],
+                              w_r[2] * imu_pos[0] - w_r[0] * imu_pos[2],
+                              w_r[0] * imu_pos[1] - w_r[1] * imu_pos[0] };
+            double wxwxr[3] = { w_r[1] * wxr[2] - w_r[2] * wxr[1],
+                                w_r[2] * wxr[0] - w_r[0] * wxr[2],
+                                w_r[0] * wxr[1] - w_r[1] * wxr[0] };
+            double axr[3] = { alpha[1] * imu_pos[2] - alpha[2] * imu_pos[1],
+                              alpha[2] * imu_pos[0] - alpha[0] * imu_pos[2],
+                              alpha[0] * imu_pos[1] - alpha[1] * imu_pos[0] };
+            const double G = 9.81;
+            sh->st.ax_g  = f_r[0] - (axr[0] + wxwxr[0]) / G;
+            sh->st.ay_g  = f_r[1] - (axr[1] + wxwxr[1]) / G;
+            sh->st.az_g  = f_r[2] - (axr[2] + wxwxr[2]) / G;
             sh->imu_ok   = wt->ready();
         }
 
@@ -72,7 +99,7 @@ static void acquireLoop(Serial* imu, Wt901* wt, ContactGpio* gpio, MountCalib* m
 
 // ---------- 主程序 ----------
 int main(int argc, char** argv) {
-    std::string cfg_path = (argc > 1) ? argv[1] : "config.yaml";
+    std::string cfg_path = (argc > 1) ? argv[1] : "config/config.yaml";
 
     Config cfg;
     try {
@@ -123,6 +150,12 @@ int main(int argc, char** argv) {
                 cfg.getString("contact_gpio_chip").c_str(), gpio_lines.size(),
                 gpio.ok() ? "OK" : "不可用（检查引脚/权限/是否装 libgpiod）");
 
+    // IMU 安装位置（用于比力的杠杆臂修正：sf_cm = sf_imu - (α×r + ω×(ω×r))）
+    std::vector<double> imu_pos = cfg.getDoubleList("imu_mount_pos_m");
+    if (imu_pos.size() < 3) imu_pos.resize(3, 0.0);
+    std::printf("[init] IMU 安装位置 (%.4f, %.4f, %.4f) m\n",
+                imu_pos[0], imu_pos[1], imu_pos[2]);
+
     // IMU（量程注入）
     Wt901 wt;
     wt.setAccelRange(cfg.getDouble("accel_range_g"));
@@ -169,13 +202,13 @@ int main(int argc, char** argv) {
     double imu_hz = cfg.getDouble("imu_read_hz");
 
     // ---- 启动采集线程 A ----
-    std::thread t(acquireLoop, &imu, &wt, &gpio, &mount, &sh, imu_hz, &g_running);
+    std::thread t(acquireLoop, &imu, &wt, &gpio, &mount, &sh, imu_hz, imu_pos.data(), &g_running);
 
     std::printf("[run] 启动决策循环 @ %.1f Hz（Ctrl+C 退出）\n", ctrl_hz);
     auto ctrl_period = std::chrono::microseconds((long long)(1e6 / ctrl_hz));
 
     // ---- 决策循环（线程 B）----
-    float obs[36];
+    float obs[38];
     float action[12];
     uint16_t pulse[12];
     uint8_t down[DOWN_LEN];
@@ -191,7 +224,7 @@ int main(int argc, char** argv) {
             snap = sh.st;
         }
 
-        // 组装 36 维 -> 前向 -> 12 动作
+        // 组装 38 维 -> 前向 -> 12 动作
         sb.build(snap, obs);
         net.forward(obs, action);
 
@@ -212,9 +245,12 @@ int main(int argc, char** argv) {
         }
 
         if ((++tick) % 10 == 1) {
-            std::printf("[run] tick=%llu  leg0=%.3fm  roll=%.2f pitch=%.2f yaw=%.2f  acc=(%.2f,%.2f,%.2f)g  contact=0x%03x\n",
+            const double PI = 3.14159265358979323846;
+            double cmd_deg = std::atan2(snap.cmd_sin, snap.cmd_cos) * 180.0 / PI;
+            std::printf("[run] tick=%llu  leg0=%.3fm  roll=%.2f pitch=%.2f yaw=%.2f  "
+                        "cmd=%.0f°  acc=(%.2f,%.2f,%.2f)g  contact=0x%03x\n",
                         (unsigned long long)tick, action[0], snap.roll, snap.pitch, snap.yaw,
-                        snap.ax_g, snap.ay_g, snap.az_g, snap.contact);
+                        cmd_deg, snap.ax_g, snap.ay_g, snap.az_g, snap.contact);
         }
 
         std::this_thread::sleep_until(next);

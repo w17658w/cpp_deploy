@@ -21,7 +21,8 @@ export_weights.py — 把训练好的 SAC Actor 权重(.pth)导出为 C++ 可读
 总计 81456 个 float32 = 325824 字节
 
 网络结构（GaussianPolicy, sac_agent.py，hidden_size=256）:
-    输入 36 -> Linear(36,256) -> ReLU -> Linear(256,256) -> ReLU -> Linear(256,24)
+    输入 obs_dim（vec=36, goal=38） -> Linear(obs_dim,256) -> ReLU
+    -> Linear(256,256) -> ReLU -> Linear(256,24)
     前 12 维是均值 mean，后 12 维是 log_std
     评估动作: action = tanh(mean) * action_scale + action_bias  ∈ [0.01, 0.09] m
 
@@ -37,8 +38,9 @@ ACTION_SCALE = (0.09 - 0.01) / 2.0   # 0.04
 ACTION_BIAS = (0.09 + 0.01) / 2.0    # 0.05
 ACTION_DIM = 12
 
-# 网络维度（与 sac_agent.py 的 hidden_size=256, obs_dim=36 一致）
-OBS_DIM, HIDDEN = 36, 256
+# 网络结构（hidden_size=256 固定）；obs_dim 不再硬编码，从 W1 形状推断，
+# 这样 36 维 vec 策略和 38 维 goal 策略可以用同一个脚本导出。
+HIDDEN = 256
 OUT_DIM = ACTION_DIM * 2             # 24
 
 
@@ -68,15 +70,18 @@ def main():
     # 去掉可能的 'policy.' 前缀，统一成裸 key
     clean = {k[7:] if k.startswith('policy.') else k: v for k, v in sd.items()}
 
-    w1 = to_np(clean['net.0.weight'])   # [256, 36]
+    w1 = to_np(clean['net.0.weight'])   # [256, obs_dim]
     b1 = to_np(clean['net.0.bias'])     # [256]
     w2 = to_np(clean['net.2.weight'])   # [256, 256]
     b2 = to_np(clean['net.2.bias'])     # [256]
     w3 = to_np(clean['net.4.weight'])   # [24, 256]
     b3 = to_np(clean['net.4.bias'])     # [24]
 
+    # 从 W1 反推 obs_dim（vec=36, goal=38）；不再硬编码
+    obs_dim = int(w1.shape[1])
+
     # 维度校验：对不上会直接报错，防止拿到旧结构/错误文件
-    assert w1.shape == (HIDDEN, OBS_DIM), f'[err] W1 形状 {w1.shape} != ({HIDDEN},{OBS_DIM})，obs_dim 对不上？'
+    assert w1.shape == (HIDDEN, obs_dim), f'[err] W1 形状 {w1.shape} != ({HIDDEN},{obs_dim})'
     assert b1.shape == (HIDDEN,), f'[err] b1 形状 {b1.shape}'
     assert w2.shape == (HIDDEN, HIDDEN), f'[err] W2 形状 {w2.shape}'
     assert b2.shape == (HIDDEN,), f'[err] b2 形状 {b2.shape}'
@@ -96,7 +101,7 @@ def main():
     print(f'     布局: W1{w1.shape} b1{b1.shape} W2{w2.shape} b2{b2.shape} '
           f'W3{w3.shape} b3{b3.shape} scale{scale.shape} bias{bias.shape}')
     print(f'     共 {n} 个 float32 = {n * 4} 字节')
-    print(f'     参考: 应与 C++ 端维度 {OBS_DIM}->{HIDDEN}->{HIDDEN}->{OUT_DIM} 一致')
+    print(f'     参考: 应与 C++ 端维度 {obs_dim}->{HIDDEN}->{HIDDEN}->{OUT_DIM} 一致')
 
 
 if __name__ == '__main__':

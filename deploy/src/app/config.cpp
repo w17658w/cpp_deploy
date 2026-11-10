@@ -86,3 +86,14 @@ std::vector<int> Config::getIntList(const std::string& key) const {
     }
     return out;
 }
+
+std::vector<double> Config::getDoubleList(const std::string& key) const {
+    std::string v = raw(key);
+    std::vector<double> out;
+    std::stringstream ss(v);
+    std::string item;
+    while (std::getline(ss, item, ',')) {
+        out.push_back(std::stod(trim(item)));
+    }
+    return out;
+}

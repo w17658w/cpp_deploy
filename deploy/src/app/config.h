@@ -25,6 +25,8 @@ public:
     bool        getBool(const std::string& key) const;
     // 逗号分隔的整数列表，如 "68,69,70,71" -> {68,69,70,71}
     std::vector<int> getIntList(const std::string& key) const;
+    // 逗号分隔的浮点列表，如 "0.463648,0,0" -> {0.463648,0,0}
+    std::vector<double> getDoubleList(const std::string& key) const;
 
 private:
     std::map<std::string, std::string> kv_;

@@ -3,7 +3,6 @@
 
 #include <cmath>
 #include <algorithm>
-
 void StateBuilder::init(double leg_mid, double leg_span) {
     mid_ = leg_mid;
     span_ = leg_span;
@@ -20,7 +19,7 @@ static double wrapPi(double a) {
     return a;
 }
 
-void StateBuilder::build(const RobotState& s, float obs[36]) {
+void StateBuilder::build(const RobotState& s, float obs[38]) {
     // [0..11] 命令腿长归一化（-R 无位置反馈，用上一命令）
     for (int i = 0; i < 12; ++i)
         obs[i] = (float)(2.0 * (s.last_cmd_m[i] - mid_) / span_);
@@ -51,6 +50,17 @@ void StateBuilder::build(const RobotState& s, float obs[36]) {
         obs[35] = (float)wrapPi(s.yaw   - prev_yaw_);
     } else {
         obs[33] = obs[34] = obs[35] = 0.0f;
+    }
+
+    // [36..37] 目标方向【相对机体系】：把世界系 (cosθ, sinθ) 用 yaw 旋转成机体系
+    // 与 env_genesis_vec.py 的 _get_state() 一致：
+    //   c_rel = cosθ*cos(yaw) + sinθ*sin(yaw)
+    //   s_rel = sinθ*cos(yaw) - cosθ*sin(yaw)
+    // 注：这两个数 hypot 恒为 1，不做归一化。
+    {
+        const double cy = std::cos(s.yaw), sy = std::sin(s.yaw);
+        obs[36] = (float)(s.cmd_cos * cy + s.cmd_sin * sy);
+        obs[37] = (float)(s.cmd_sin * cy - s.cmd_cos * sy);
     }
 
     // 更新上一帧姿态

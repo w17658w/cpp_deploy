@@ -1,10 +1,11 @@
-# sim-to-real 机器人物理参数（仿真与实机必须一致，改动需同步部署端 config.yaml）
+# 仿真物理参数（机器人质量/关节/摩擦/出生姿态）
 # 训练代码 env_genesis_vec.py 从这里读取，改参数不用动训练代码。
+# 部署相关参数（IMU 安装标定、串口、GPIO、脉宽等）在 config/config.yaml。
 
 robot:
   urdf_file: urdf/sphere_robot_aligned.urdf   # 新版 URDF（正二十面体腿方向，SolidWorks CAD 导出）
   base_mass_kg: 2.178                          # 机身质量（CAD 实测，旧模型是 1.27）
-  spawn_z: 0.26                                # 出生高度（leg3 脚贴地，单脚落定三脚）
+  spawn_z: 0.21                                 # 出生高度（三脚共面姿态下，三只脚刚好贴地）
   friction: 1.0                                # 滑动摩擦系数（对齐 PyBullet lateralFriction=1.0）
 
 joint:                                         # 关节（每条腿 actuator + slide 两段，共 24 关节）
@@ -17,3 +18,8 @@ joint:                                         # 关节（每条腿 actuator + s
 motor:                                         # ACTUONIX L16 电动缸
   model: L16-100-35-6-R
   whole_mass_kg: 0.074                         # 每台完整 L16 质量
+
+# 自然机身系定义：三脚落地稳定姿态（该姿态下 roll/pitch/yaw = 0）
+# （leg3 + leg1 + leg2 三脚严格共面着地；纯几何算出，绕 X 轴 roll -37.3°）
+natural_frame:
+  spawn_quat: [0.947488, -0.319791, 0.0, 0.0]   # 出生四元数 (w,x,y,z)，三脚共面、落定后姿态≈0

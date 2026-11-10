@@ -16,10 +16,12 @@ control_hz: 1.0                   # 推理/发动作频率（训练时 ACTION_RE
 imu_read_hz: 50                   # IMU 读取线程目标刷新频率
 
 # ---- 权重 ----
-weights_path: "../models/actor.bin"  # 36 维网络（tools/export_weights.py 导出，放在仓库根 models/ 下）
+# 38 维网络（tools/export_weights.py 从 robot6_sac_goal 的 best/checkpoint 导出）
+# 当前为占位：训练侧改成"相对机体系 obs"后需重导，重导前 mlp.load 会因维度不符直接报错
+weights_path: "../models/actor_goal38.bin"
 
 # ---- 网络维度（与训练一致，一般不改）----
-obs_dim: 36
+obs_dim: 38
 hidden_size: 256
 action_dim: 12
 
@@ -36,6 +38,11 @@ angle_range_deg: 180              # 角度量程（X/Z ±180°，Y ±90°，编�
 zero_bias_samples: 100            # 开机零偏采样帧数（约 2 秒 @50Hz）
 enable_axis_calib: true           # 安装角补偿：true=标定时自动抓当前原始欧拉角做 R_mount（任意倾斜安装都适用，如绕 X 轴 ~18°）
 
+# ---- IMU 安装标定（方向 + 位置，实测填）----
+# rpy 是「IMU 系 → 自然机身系」的旋转（roll绕X / pitch绕Y / yaw绕Z）
+imu_mount_pos_m: 0.0, 0.0, 0.0        # 安装位置偏移（自然机身系，m，待实测）
+imu_mount_rpy_rad: 0.463648, 0.0, 0.0 # 安装姿态：Y沿leg11、Z朝上垂直Y、右手系 → 绕X roll +26.565°
+
 # ---- 触地 GPIO（香橙派直读，12 路压力传感器 DO）----
 # 电平警告：香橙派 GPIO 是 3.3V。若传感器模块 5V 供电且 DO 输出 5V，必须加电平转换，否则可能烧板。
 contact_gpio_chip: "/dev/gpiochip0"     # gpiochip 设备（用 gpioinfo 查）
@@ -49,3 +56,11 @@ pulse_max_us: 2000                # 2.0ms = 全伸出
 
 # ---- 初始动作（开机默认每条腿，对应 env last_cmd=[0.03]*12）----
 init_leg_length_m: 0.03
+
+# ---- 方向指令通道（WiFiLink，预留，未启用）----
+# 启用时：把 cmd_link.cpp 写出来并加进 CMakeLists，main.cpp 起接收线程覆盖
+#         RobotState.cmd_cos/cmd_sin（世界系单位向量）。
+# 未启用时：默认走 config 里的方向（当前默认 180°，对应 cmd_cos=-1, cmd_sin=0）。
+# cmd_link_udp_port: 5005
+# cmd_link_timeout_ms: 500
+# cmd_dir_default_deg: 180.0
