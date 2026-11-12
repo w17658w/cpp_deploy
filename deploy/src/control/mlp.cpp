@@ -77,6 +77,6 @@ void Mlp::forward(const float* x, float* action) {
     }
     // 动作 = tanh(mean) * scale + bias（取前 act_ 维作为均值）
     for (int k = 0; k < act_; ++k) {
-        action[k] = std::tanhf(o_[k]) * scale_[k] + bias_[k];
+        action[k] = std::tanh(o_[k]) * scale_[k] + bias_[k];
     }
 }

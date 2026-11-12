@@ -45,8 +45,10 @@ imu_mount_rpy_rad: 0.463648, 0.0, 0.0 # 安装姿态：Y沿leg11、Z朝上垂直
 
 # ---- 触地 GPIO（香橙派直读，12 路压力传感器 DO）----
 # 电平警告：香橙派 GPIO 是 3.3V。若传感器模块 5V 供电且 DO 输出 5V，必须加电平转换，否则可能烧板。
-contact_gpio_chip: "/dev/gpiochip0"     # gpiochip 设备（用 gpioinfo 查）
-contact_gpio_lines: 41,139,96,357,356,140,141,36,97,99,38,98   # 12 根 GPIO line 号（A733，按 leg_01~leg_12 顺序）
+# line 号是全局 GPIO 号（wiringOP gpio readall 里 GPIO 列），代码自动区分 gpiochip0/1：
+#   gpiochip0 = GPIO 0~351 (PORTA~K)，gpiochip1 = GPIO 352~415 (PORTL)
+contact_gpio_chip: "/dev/gpiochip0"     # 主 chip 路径（gpiochip1 自动按同目录推导）
+contact_gpio_lines: 37,139,96,357,356,140,141,36,97,99,38,98   # 12 根 GPIO 号（按 leg_01~leg_12 顺序）
 contact_active_high: true               # 有效电平（true=高电平表示触地，按模块实际改）
 
 # ---- 舵机（L16-100-35-6-R）----

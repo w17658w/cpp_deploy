@@ -44,8 +44,9 @@ static void acquireLoop(Serial* imu, Wt901* wt, ContactGpio* gpio, MountCalib* m
         if (n > 0) {
             for (int i = 0; i < n; ++i) wt->feed(b[i]);
             std::lock_guard<std::mutex> g(sh->mtx);
-            // 安装补偿：姿态用「原始角(绝对姿态)」做完整旋转；角速度/比力用去零偏后的量
-            mount->applyOrientation(wt->rollRawRad(), wt->pitchRawRad(), wt->yawRawRad(),
+            // 安装补偿：姿态用「已减零偏基准的相对角」（对齐训练端 body_ori = SPAWN_QUAT_INV * world_quat）
+            // 角速度/比力用去零偏后的传感器系量，再经 R_mount^T 转机体系
+            mount->applyOrientation(wt->rollRad(), wt->pitchRad(), wt->yawRad(),
                                     sh->st.roll, sh->st.pitch, sh->st.yaw);
             double w[3] = {wt->wxRadS(), wt->wyRadS(), wt->wzRadS()};
             double f[3] = {wt->axG(), wt->ayG(), wt->azG()};
@@ -123,14 +124,14 @@ int main(int argc, char** argv) {
     }
 
     // 网络
-    int obs = cfg.getInt("obs_dim"), hid = cfg.getInt("hidden_size"), act = cfg.getInt("action_dim");
+    int obs_dim = cfg.getInt("obs_dim"), hid = cfg.getInt("hidden_size"), act = cfg.getInt("action_dim");
     Mlp net;
-    net.init(obs, hid, act);
+    net.init(obs_dim, hid, act);
     if (!net.load(cfg.getString("weights_path"))) {
         std::fprintf(stderr, "[err] 权重加载失败: %s\n", cfg.getString("weights_path").c_str());
         return 1;
     }
-    std::printf("[init] 权重加载成功（%d->%d->%d->%d）\n", obs, hid, hid, act * 2);
+    std::printf("[init] 权重加载成功（%d->%d->%d->%d）\n", obs_dim, hid, hid, act * 2);
 
     // 状态组装
     StateBuilder sb;
@@ -186,9 +187,10 @@ int main(int argc, char** argv) {
     // ---- 安装角补偿：机器人摆到零姿态后，用「原始欧拉角」做安装基准 R_mount ----
     MountCalib mount;
     if (cfg.getBool("enable_axis_calib")) {
-        mount.calibrate(wt.rollRawRad(), wt.pitchRawRad(), wt.yawRawRad());
-        std::printf("[calib] 安装角补偿已启用（原始角 roll=%.1f° pitch=%.1f° yaw=%.1f°）\n",
-                    wt.rollRawRad() * 57.2958, wt.pitchRawRad() * 57.2958, wt.yawRawRad() * 57.2958);
+        // 用已减零偏基准的角度做安装基准（此时≈0，机器人摆到零姿态即对齐训练端出生姿态）
+        mount.calibrate(wt.rollRad(), wt.pitchRad(), wt.yawRad());
+        std::printf("[calib] 安装角补偿已启用（相对角 roll=%.1f° pitch=%.1f° yaw=%.1f°）\n",
+                    wt.rollRad() * 57.2958, wt.pitchRad() * 57.2958, wt.yawRad() * 57.2958);
     } else {
         std::printf("[calib] 安装角补偿未启用\n");
     }
